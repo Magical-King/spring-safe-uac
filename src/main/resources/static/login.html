@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <script src="https://cdn.staticfile.org/jquery/1.12.3/jquery.min.js"></script>
+</head>
+<body>
+<h1>业务系统登录</h1>
+<form action="/auth/form" method="post">
+    <span>用户名称</span><input type="text" name="username" id="username"/> <br>
+    <span>用户密码</span><input type="password" name="password" id="password"/> <br>
+    <span>图片验证码</span><input type="text" name="captcha" id="captcha"/>
+    <img src="auth/code/email" width="110px" height="40px" id="image"><br>
+    <label><input type="checkbox" name="remember-me" id="remember-me"></label>
+    <input type="button" onclick="login()" value="登陆">
+<!--    <input type="submit" value="登陆">-->
+</form>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/core.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/yahoo-min.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/jsbn.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/jsbn2.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/prng4.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/rng.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/asn1-1.0.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/asn1hex-1.1.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/crypto-1.1.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/ec.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/ec-patch.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/ecdsa-modified-1.0.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/sm3-1.0.0.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/sm3-sm2-1.0.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/ecparam-1.0.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/sm2.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/sm2_test.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/sm2-util.js"></script>
+<script language="JavaScript" type="text/javascript" src="./crypto-js/md5.js"></script>
+<h3>短信登录</h3>
+<form action="auth/mobile" method="post">
+    <table>
+        <tr>
+            <td>手机号:</td>
+            <td><input type="text" id="mobile" name="mobile" value="13012345678"></td>
+        </tr>
+        <tr>
+            <td>短信验证码:</td>
+            <td>
+                <input type="text" name="smsCode" id="smsCode">
+<!--                <a href="auth/code/sms?username=13012345678">发送验证码</a>-->
+                <input type="button" onclick="sendSMS()" value="发送验证码">
+            </td>
+        </tr>
+        <tr>
+            <input type="button" onclick="loginSms()" value="登陆">
+        </tr>
+    </table>
+</form>
+
+<script>
+    window.onload = function (ev) {
+        var kaptchaImg = document.getElementById("image");
+
+        kaptchaImg.onclick = function (ev1) {
+            kaptchaImg.src = "auth/code/image"
+        }
+    };
+    function login() {
+        var sm2_pubkeyHex = "04395DCF9C903B298A76495952611992986E45AD08BB9BF03B2415CF24D3F30D1797FA31147B903E3DBA2929AC150BBCB551B2FB7519753D00AC801F3B277EFD1F"
+        var username = $("#username").val();
+        var password = $("#password").val();
+        var rememberMe = $("#remember-me").is(":checked");
+        var imageCode = $("#captcha").val();
+        var smsCode = $("#sms").val();
+        // if (username === "" || password === "") {
+        //     alert('用户名或密码不能为空');
+        //     return;
+        // }
+
+        var json = JSON.stringify({
+            "username": username,
+            "password": digest(password),
+            "remember-me": rememberMe,
+            "imageCode":imageCode,
+            // "emailCode":emailCode,
+            "smsCode": smsCode,
+            "mobile": 18779107319
+        });
+
+
+        var encoded_json = sm2_crypt(sm2_pubkeyHex,json);
+        $.ajax({
+            type: "POST",
+            url: "/gz-user/create1",
+            // url: "/auth/form",
+            // dataType:"json",
+            // contentType:"text/html;charset=utf-8",
+            contentType:"application/json;charset=utf-8",
+            data: encoded_json,
+            // data: "111",
+            success: function (json) {
+                if(json.code == 10000){
+                    alert(json.message)
+                }else{
+                    alert(json.message)
+                }
+
+            },
+            error: function (e) {
+                console.log(e.responseText);
+            }
+        });
+    }
+
+    function sendSMS() {
+        var sm2_pubkeyHex = "04395DCF9C903B298A76495952611992986E45AD08BB9BF03B2415CF24D3F30D1797FA31147B903E3DBA2929AC150BBCB551B2FB7519753D00AC801F3B277EFD1F"
+        var json = JSON.stringify({
+            "mobile": $("#mobile").val(),
+            "smsCode": $("#smsCode").val()
+        });
+
+
+        var encoded_json = sm2_crypt(sm2_pubkeyHex,json);
+        $.ajax({
+            type: "POST",
+            url: "auth/code/sms",
+            dataType:"json",
+            // contentType:"text/html;charset=utf-8",
+            data: encoded_json,
+            success: function (json) {
+                if(json.code == 10000){
+                    location.href = json.data;
+                }else{
+                    alert(json.message)
+                }
+
+            },
+            error: function (e) {
+                console.log(e.responseText);
+            }
+        });
+    }
+
+    function loginSms() {
+        var sm2_pubkeyHex = "04395DCF9C903B298A76495952611992986E45AD08BB9BF03B2415CF24D3F30D1797FA31147B903E3DBA2929AC150BBCB551B2FB7519753D00AC801F3B277EFD1F"
+
+        var json = JSON.stringify({
+            // "mobile": $("#mobile").val(),
+            // "smsCode": $("#smsCode").val()
+            "start": 1,
+            "limit": 10,
+            "property": "user_id",
+            "asc": true
+        });
+
+        // var json = {
+        //     // "mobile": $("#mobile").val(),
+        //     // "smsCode": $("#smsCode").val()
+        //     "start": 1,
+        //     "limit": 1,
+        //     "property": "user_id",
+        //     "isAsc": true
+        // };
+
+
+        var encoded_json = sm2_crypt(sm2_pubkeyHex,json);
+        $.ajax({
+            type: "post",
+            // url: "auth/mobile",
+            url: "/gz-user/list",
+            dataType:"json",
+            contentType:"application/json;charset=utf-8",
+            data: encoded_json,
+            success: function (json) {
+                if(json.code == 10000){
+                    // location.href = json.data;
+                    alert(json.message)
+                }else{
+                    alert(json.message)
+                }
+
+            },
+            error: function (e) {
+                console.log(e.responseText);
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+
+spring:
+  datasource:
+    url: jdbc:mysql://10.10.180.28:3306/${gzrobot.db.tableSchema}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Hongkong
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+  freemarker:
+    cache: false # 缓存配置 开发阶段应该配置为false 因为经常会改
+    suffix: .html # 模版后缀名 默认为ftl
+    charset: UTF-8 # 文件编码
+    template-loader-path: classpath:/templates/
+  main:
+    allow-bean-definition-overriding: true
+  messages:
+    encoding: UTF-8
+    cache-duration: 6m
+    use-code-as-default-message: true
+    basename: i18n/message,i18n/validation,i18n/menu
+  mail:
+    host: ${gzrobot.email.smtp.host}
+    username: ${gzrobot.email.sender.account}
+    password: ${gzrobot.email.sender.password}
+    port: ${gzrobot.email.smtp.port}
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 2000
+          timeout: 2000
+          writetimeout: 2000
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+
+mybatis:
+  configuration:
+    mapUnderscoreToCamelCase: true
+
+logging:
+  config:
+  level:
+    com.*: error
+mybatis-plus:
+  mapper-locations: classpath*:mappers/*Mapper.xml
+  type-aliases-package: org.springframework.uac.**.domain
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  params:
+    count:
+      countSql
+server:
+  port: 8090
+  servlet:
+    context-path:
+
+gzrobot:
+  ipWhite:
+    enable: true
+  license:
+    isDocker: true
+  internationalise:
+    language: zh
+    country: CN
+  db:
+    tableSchema: gz_security
+  validate:
+    sm2: false
+    enable: true
+    cache:
+      local: true
+  handleDataIntegrity:
+    enable: false
+  email:
+    number: 5
+    expire: 300
+    defaultSender: root@gzrobot.com
+    service:
+      enable: true
+      debug: true
+      tryNumber: 5
+      sleepSeconds: 10
+      turnOnWaitSeconds: 2
+    smtp:
+      auth: true
+      localhost: gz
+      host: 10.10.180.201
+      port: 25
+    sender:
+      account: root@gzrobot.com
+      password: GZrobot123456+
+

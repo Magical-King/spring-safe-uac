@@ -1,0 +1,9 @@
+许可ID
+    USER:100
+    ROLE:200
+    ORG:300
+    REVIEW:400
+    PERM:500
+    MEIL:600
+    LOG:700
+    COFIG:800
